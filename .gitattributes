@@ -1,2 +1,1 @@
-$ cat .gitattributes
 *.sql linguist-language=SQL
