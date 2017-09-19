@@ -1,4 +1,4 @@
---vim: set syntax=sql:
+vim: syntax=sql
 
 -- Параметры скрипта
 declare @database_names as nvarchar(max) = N'Test'; -- имена баз задавать через запятую, если не заданы, то все несистемные базы
