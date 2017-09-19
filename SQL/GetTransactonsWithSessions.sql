@@ -15,7 +15,7 @@ SELECT
 	sessions.transaction_isolation_level
 FROM sys.dm_tran_active_snapshot_database_transactions transactions
 	INNER JOIN sys.dm_exec_sessions sessions 
-	ON transactions.session_id=s.session_id
+	ON transactions.session_id = sessions.session_id
 
 WHERE transactions.elapsed_time_seconds > 0
 
