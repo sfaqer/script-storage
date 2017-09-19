@@ -1,15 +1,15 @@
--- Ïàðàìåòðû ñêðèïòà
-declare @database_names as nvarchar(max) = N'Test'; -- èìåíà áàç çàäàâàòü ÷åðåç çàïÿòóþ, åñëè íå çàäàíû, òî âñå íåñèñòåìíûå áàçû
-										  -- ïîêà ïàðñåð ïðèìèòèâíûé - ñòðîêà ïðîñòî äåëèòñÿ ïî çàïÿòûì è îáðåçàþòñÿ êðàéíèå ïðîáåëû
-										  -- (åñëè â èìåíè áàçû áóäåò çàïÿòàÿ èëè â íà÷àëå èëè êîíöå èìåíè ïðîáåë, òî ñèñòåìà íå ðàáîòàåò)
-										  -- åñëè óêàçàíî "-ÈìÿÁàçû", òî áàçà áóäåò èñêëþ÷åíà, 
-declare @index_size_threshhold as int = 1024;   -- ìèíèìàëüíûé ðàçìåð â ÊÁ äëÿ ïåðåñòðàèâàåìîãî èíäåêñà. Íåò ñìûñëà ïåðåñòðàèâàòü èíäåêñû íà äåñÿòîê ñòðàíèö
-declare @index_rebuild_threshhold as numeric(5,2) = 25; -- ïîêàçàòåëü ôðàãìåíòàöèè, íà÷èíàÿ ñ êîòîðîãî ïðîèñõîäèò ïåðåñòðîåíèå èíäåêñà
-declare @index_defrag_threshhold as numeric(5,2) = 12;  -- ïîêàçàòåëü ôðàãìåíòàöèè, íà÷èíàÿ ñ êîòîðîãî ïðîèñõîäèò äåôðàãìåíòàöèÿ èíäåêñà
-declare @index_rebuild_space_used_threshhold as numeric(5,2) = 50; -- ïðîöåíò çàïîëíåííîñòè ñòðàíèö ìåíüøå êîòîðîãî òðåáóåòñÿ ïåðåñòðîåíèå èíäåêñà
-declare @timeout as int = 10800; -- ìàêñèìàëüíîå âðåìÿ ðàáîòû ñêðèïòà
-declare @max_size as bigint = 536870912; -- ìàêñèìàëüíûé ñóììàðíûé îáðàáàòûâàåìûé ðàçìåð â ÊÁ (÷òîáû íå íàãåíåðèðîâàòü ëîãîâ íà òåðàáàéòû) -- 512*1024*1024 ÊÁ = 0,5 ÒÁ
-declare @is_emulate as bit = 0; -- 0 - âûïîëíÿòü, 1 - òîëüêî âûâåñòè êîìàíäû
+ï»¿-- ÐŸÐ°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ñ‹ ÑÐºÑ€Ð¸Ð¿Ñ‚Ð°
+declare @database_names as nvarchar(max) = N'Test'; -- Ð¸Ð¼ÐµÐ½Ð° Ð±Ð°Ð· Ð·Ð°Ð´Ð°Ð²Ð°Ñ‚ÑŒ Ñ‡ÐµÑ€ÐµÐ· Ð·Ð°Ð¿ÑÑ‚ÑƒÑŽ, ÐµÑÐ»Ð¸ Ð½Ðµ Ð·Ð°Ð´Ð°Ð½Ñ‹, Ñ‚Ð¾ Ð²ÑÐµ Ð½ÐµÑÐ¸ÑÑ‚ÐµÐ¼Ð½Ñ‹Ðµ Ð±Ð°Ð·Ñ‹
+										  -- Ð¿Ð¾ÐºÐ° Ð¿Ð°Ñ€ÑÐµÑ€ Ð¿Ñ€Ð¸Ð¼Ð¸Ñ‚Ð¸Ð²Ð½Ñ‹Ð¹ - ÑÑ‚Ñ€Ð¾ÐºÐ° Ð¿Ñ€Ð¾ÑÑ‚Ð¾ Ð´ÐµÐ»Ð¸Ñ‚ÑÑ Ð¿Ð¾ Ð·Ð°Ð¿ÑÑ‚Ñ‹Ð¼ Ð¸ Ð¾Ð±Ñ€ÐµÐ·Ð°ÑŽÑ‚ÑÑ ÐºÑ€Ð°Ð¹Ð½Ð¸Ðµ Ð¿Ñ€Ð¾Ð±ÐµÐ»Ñ‹
+										  -- (ÐµÑÐ»Ð¸ Ð² Ð¸Ð¼ÐµÐ½Ð¸ Ð±Ð°Ð·Ñ‹ Ð±ÑƒÐ´ÐµÑ‚ Ð·Ð°Ð¿ÑÑ‚Ð°Ñ Ð¸Ð»Ð¸ Ð² Ð½Ð°Ñ‡Ð°Ð»Ðµ Ð¸Ð»Ð¸ ÐºÐ¾Ð½Ñ†Ðµ Ð¸Ð¼ÐµÐ½Ð¸ Ð¿Ñ€Ð¾Ð±ÐµÐ», Ñ‚Ð¾ ÑÐ¸ÑÑ‚ÐµÐ¼Ð° Ð½Ðµ Ñ€Ð°Ð±Ð¾Ñ‚Ð°ÐµÑ‚)
+										  -- ÐµÑÐ»Ð¸ ÑƒÐºÐ°Ð·Ð°Ð½Ð¾ "-Ð˜Ð¼ÑÐ‘Ð°Ð·Ñ‹", Ñ‚Ð¾ Ð±Ð°Ð·Ð° Ð±ÑƒÐ´ÐµÑ‚ Ð¸ÑÐºÐ»ÑŽÑ‡ÐµÐ½Ð°, 
+declare @index_size_threshhold as int = 1024;   -- Ð¼Ð¸Ð½Ð¸Ð¼Ð°Ð»ÑŒÐ½Ñ‹Ð¹ Ñ€Ð°Ð·Ð¼ÐµÑ€ Ð² ÐšÐ‘ Ð´Ð»Ñ Ð¿ÐµÑ€ÐµÑÑ‚Ñ€Ð°Ð¸Ð²Ð°ÐµÐ¼Ð¾Ð³Ð¾ Ð¸Ð½Ð´ÐµÐºÑÐ°. ÐÐµÑ‚ ÑÐ¼Ñ‹ÑÐ»Ð° Ð¿ÐµÑ€ÐµÑÑ‚Ñ€Ð°Ð¸Ð²Ð°Ñ‚ÑŒ Ð¸Ð½Ð´ÐµÐºÑÑ‹ Ð½Ð° Ð´ÐµÑÑÑ‚Ð¾Ðº ÑÑ‚Ñ€Ð°Ð½Ð¸Ñ†
+declare @index_rebuild_threshhold as numeric(5,2) = 25; -- Ð¿Ð¾ÐºÐ°Ð·Ð°Ñ‚ÐµÐ»ÑŒ Ñ„Ñ€Ð°Ð³Ð¼ÐµÐ½Ñ‚Ð°Ñ†Ð¸Ð¸, Ð½Ð°Ñ‡Ð¸Ð½Ð°Ñ Ñ ÐºÐ¾Ñ‚Ð¾Ñ€Ð¾Ð³Ð¾ Ð¿Ñ€Ð¾Ð¸ÑÑ…Ð¾Ð´Ð¸Ñ‚ Ð¿ÐµÑ€ÐµÑÑ‚Ñ€Ð¾ÐµÐ½Ð¸Ðµ Ð¸Ð½Ð´ÐµÐºÑÐ°
+declare @index_defrag_threshhold as numeric(5,2) = 12;  -- Ð¿Ð¾ÐºÐ°Ð·Ð°Ñ‚ÐµÐ»ÑŒ Ñ„Ñ€Ð°Ð³Ð¼ÐµÐ½Ñ‚Ð°Ñ†Ð¸Ð¸, Ð½Ð°Ñ‡Ð¸Ð½Ð°Ñ Ñ ÐºÐ¾Ñ‚Ð¾Ñ€Ð¾Ð³Ð¾ Ð¿Ñ€Ð¾Ð¸ÑÑ…Ð¾Ð´Ð¸Ñ‚ Ð´ÐµÑ„Ñ€Ð°Ð³Ð¼ÐµÐ½Ñ‚Ð°Ñ†Ð¸Ñ Ð¸Ð½Ð´ÐµÐºÑÐ°
+declare @index_rebuild_space_used_threshhold as numeric(5,2) = 50; -- Ð¿Ñ€Ð¾Ñ†ÐµÐ½Ñ‚ Ð·Ð°Ð¿Ð¾Ð»Ð½ÐµÐ½Ð½Ð¾ÑÑ‚Ð¸ ÑÑ‚Ñ€Ð°Ð½Ð¸Ñ† Ð¼ÐµÐ½ÑŒÑˆÐµ ÐºÐ¾Ñ‚Ð¾Ñ€Ð¾Ð³Ð¾ Ñ‚Ñ€ÐµÐ±ÑƒÐµÑ‚ÑÑ Ð¿ÐµÑ€ÐµÑÑ‚Ñ€Ð¾ÐµÐ½Ð¸Ðµ Ð¸Ð½Ð´ÐµÐºÑÐ°
+declare @timeout as int = 10800; -- Ð¼Ð°ÐºÑÐ¸Ð¼Ð°Ð»ÑŒÐ½Ð¾Ðµ Ð²Ñ€ÐµÐ¼Ñ Ñ€Ð°Ð±Ð¾Ñ‚Ñ‹ ÑÐºÑ€Ð¸Ð¿Ñ‚Ð°
+declare @max_size as bigint = 536870912; -- Ð¼Ð°ÐºÑÐ¸Ð¼Ð°Ð»ÑŒÐ½Ñ‹Ð¹ ÑÑƒÐ¼Ð¼Ð°Ñ€Ð½Ñ‹Ð¹ Ð¾Ð±Ñ€Ð°Ð±Ð°Ñ‚Ñ‹Ð²Ð°ÐµÐ¼Ñ‹Ð¹ Ñ€Ð°Ð·Ð¼ÐµÑ€ Ð² ÐšÐ‘ (Ñ‡Ñ‚Ð¾Ð±Ñ‹ Ð½Ðµ Ð½Ð°Ð³ÐµÐ½ÐµÑ€Ð¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ Ð»Ð¾Ð³Ð¾Ð² Ð½Ð° Ñ‚ÐµÑ€Ð°Ð±Ð°Ð¹Ñ‚Ñ‹) -- 512*1024*1024 ÐšÐ‘ = 0,5 Ð¢Ð‘
+declare @is_emulate as bit = 0; -- 0 - Ð²Ñ‹Ð¿Ð¾Ð»Ð½ÑÑ‚ÑŒ, 1 - Ñ‚Ð¾Ð»ÑŒÐºÐ¾ Ð²Ñ‹Ð²ÐµÑÑ‚Ð¸ ÐºÐ¾Ð¼Ð°Ð½Ð´Ñ‹
 
 set nocount on;
 use master;
@@ -43,11 +43,11 @@ create table #index_stats (
 	db_name nvarchar(128)
 	)
 
-print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- Ïîèñê áàç äàííûõ äëÿ îáñëóæèâàíèÿ'
+print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- ÐŸÐ¾Ð¸ÑÐº Ð±Ð°Ð· Ð´Ð°Ð½Ð½Ñ‹Ñ… Ð´Ð»Ñ Ð¾Ð±ÑÐ»ÑƒÐ¶Ð¸Ð²Ð°Ð½Ð¸Ñ'
 declare @timeout_datetime datetime = dateadd(second, @timeout, getdate());
 
 
--- Ñîçäàíèå ñïèñêà îáñëóæèâàåìûõ ÁÄ ïî @database_names
+-- Ð¡Ð¾Ð·Ð´Ð°Ð½Ð¸Ðµ ÑÐ¿Ð¸ÑÐºÐ° Ð¾Ð±ÑÐ»ÑƒÐ¶Ð¸Ð²Ð°ÐµÐ¼Ñ‹Ñ… Ð‘Ð” Ð¿Ð¾ @database_names
 with database_name_table(database_names_tail, database_name) as 
 	(
 		select 
@@ -75,15 +75,15 @@ insert @database_names_table (name)
 select name 
 from sys.databases db
 where 
-db.name not in ('master', 'model', 'tempdb', 'msdb') -- ñèñòåìíûå áàçû äàííûõ îáû÷íî íå òðåáóåòñÿ ïåðåèíäåêñèðîâàòü
+db.name not in ('master', 'model', 'tempdb', 'msdb') -- ÑÐ¸ÑÑ‚ÐµÐ¼Ð½Ñ‹Ðµ Ð±Ð°Ð·Ñ‹ Ð´Ð°Ð½Ð½Ñ‹Ñ… Ð¾Ð±Ñ‹Ñ‡Ð½Ð¾ Ð½Ðµ Ñ‚Ñ€ÐµÐ±ÑƒÐµÑ‚ÑÑ Ð¿ÐµÑ€ÐµÐ¸Ð½Ð´ÐµÐºÑÐ¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ
 and db.name not in (select dbi.database_name from database_names_with_indicator dbi where indicator = 1)
 and ((select top 1 dbi.database_name from database_names_with_indicator dbi where indicator = 0) is null or 
 	db.name in (select dbi.database_name from database_names_with_indicator dbi where indicator = 0))
 ;
-print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- íàéäåíî ' + convert(nvarchar(max), @@rowcount) + ' áàç äàííûõ äëÿ îáñëóæèâàíèÿ'
+print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- Ð½Ð°Ð¹Ð´ÐµÐ½Ð¾ ' + convert(nvarchar(max), @@rowcount) + ' Ð±Ð°Ð· Ð´Ð°Ð½Ð½Ñ‹Ñ… Ð´Ð»Ñ Ð¾Ð±ÑÐ»ÑƒÐ¶Ð¸Ð²Ð°Ð½Ð¸Ñ'
 
-print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- Ïîèñê èíäåêñîâ äëÿ îáñëóæèâàíèÿ'
--- êóðñîðîì îáõîäèì âûáðàííûå ÁÄ è èùåì èíäåêñû è äàííûå ïî èõ ôðàãìåíòàöèè
+print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- ÐŸÐ¾Ð¸ÑÐº Ð¸Ð½Ð´ÐµÐºÑÐ¾Ð² Ð´Ð»Ñ Ð¾Ð±ÑÐ»ÑƒÐ¶Ð¸Ð²Ð°Ð½Ð¸Ñ'
+-- ÐºÑƒÑ€ÑÐ¾Ñ€Ð¾Ð¼ Ð¾Ð±Ñ…Ð¾Ð´Ð¸Ð¼ Ð²Ñ‹Ð±Ñ€Ð°Ð½Ð½Ñ‹Ðµ Ð‘Ð” Ð¸ Ð¸Ñ‰ÐµÐ¼ Ð¸Ð½Ð´ÐµÐºÑÑ‹ Ð¸ Ð´Ð°Ð½Ð½Ñ‹Ðµ Ð¿Ð¾ Ð¸Ñ… Ñ„Ñ€Ð°Ð³Ð¼ÐµÐ½Ñ‚Ð°Ñ†Ð¸Ð¸
 declare @database_cursor as cursor;
 declare @current_database as nvarchar(128);
 set @database_cursor = cursor forward_only for
@@ -103,9 +103,9 @@ begin
 	from 
 		sys.dm_db_index_physical_stats( db_id(@current_database), null, null, null, 'DETAILED') ips
 	where 
-		ips.index_id>0 -- óáèðàåì êó÷è (heap)
-		and ips.index_type_desc in (N'CLUSTERED INDEX', N'NONCLUSTERED INDEX') -- âñÿêèå õèòðûå èíäåêñû íå îáðàáàòûâàåì
-		and ips.alloc_unit_type_desc = N'IN_ROW_DATA' -- îáðàáàòûâàåì òîëüêî ïî "îáû÷íûì" çàïèñÿì
+		ips.index_id>0 -- ÑƒÐ±Ð¸Ñ€Ð°ÐµÐ¼ ÐºÑƒÑ‡Ð¸ (heap)
+		and ips.index_type_desc in (N'CLUSTERED INDEX', N'NONCLUSTERED INDEX') -- Ð²ÑÑÐºÐ¸Ðµ Ñ…Ð¸Ñ‚Ñ€Ñ‹Ðµ Ð¸Ð½Ð´ÐµÐºÑÑ‹ Ð½Ðµ Ð¾Ð±Ñ€Ð°Ð±Ð°Ñ‚Ñ‹Ð²Ð°ÐµÐ¼
+		and ips.alloc_unit_type_desc = N'IN_ROW_DATA' -- Ð¾Ð±Ñ€Ð°Ð±Ð°Ñ‚Ñ‹Ð²Ð°ÐµÐ¼ Ñ‚Ð¾Ð»ÑŒÐºÐ¾ Ð¿Ð¾ "Ð¾Ð±Ñ‹Ñ‡Ð½Ñ‹Ð¼" Ð·Ð°Ð¿Ð¸ÑÑÐ¼
 		and ips.index_level = 0
 	group by database_id, object_id, index_id, index_type_desc
 	having sum(page_count)*8 >= @index_size_threshhold 
@@ -131,10 +131,10 @@ use master;
 close @database_cursor;
 deallocate @database_cursor;
 
-declare @WithOptionsRebuild nvarchar(100) = 'WITH (SORT_IN_TEMPDB = ON); '; -- â Enterprise/Developer ìîæíî äîáàâèòü â ñêîáêè ", ONLINE = ON"
+declare @WithOptionsRebuild nvarchar(100) = 'WITH (SORT_IN_TEMPDB = ON); '; -- Ð² Enterprise/Developer Ð¼Ð¾Ð¶Ð½Ð¾ Ð´Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ Ð² ÑÐºÐ¾Ð±ÐºÐ¸ ", ONLINE = ON"
 
-print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- Îáðàáîòêà íàéäåííûõ èíäåêñîâ'
--- Êóðñîðîì îáõîäèì âûáðàííûå èíäåêñû è èùåì òå, êîòîðûå íàäî îáñëóæèâàòü â ïîðÿäêå óáûâàíèÿ ðàçìåðà (áåç óïîðÿäî÷íèâàíèÿ ïî ÁÄ!)
+print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- ÐžÐ±Ñ€Ð°Ð±Ð¾Ñ‚ÐºÐ° Ð½Ð°Ð¹Ð´ÐµÐ½Ð½Ñ‹Ñ… Ð¸Ð½Ð´ÐµÐºÑÐ¾Ð²'
+-- ÐšÑƒÑ€ÑÐ¾Ñ€Ð¾Ð¼ Ð¾Ð±Ñ…Ð¾Ð´Ð¸Ð¼ Ð²Ñ‹Ð±Ñ€Ð°Ð½Ð½Ñ‹Ðµ Ð¸Ð½Ð´ÐµÐºÑÑ‹ Ð¸ Ð¸Ñ‰ÐµÐ¼ Ñ‚Ðµ, ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ðµ Ð½Ð°Ð´Ð¾ Ð¾Ð±ÑÐ»ÑƒÐ¶Ð¸Ð²Ð°Ñ‚ÑŒ Ð² Ð¿Ð¾Ñ€ÑÐ´ÐºÐµ ÑƒÐ±Ñ‹Ð²Ð°Ð½Ð¸Ñ Ñ€Ð°Ð·Ð¼ÐµÑ€Ð° (Ð±ÐµÐ· ÑƒÐ¿Ð¾Ñ€ÑÐ´Ð¾Ñ‡Ð½Ð¸Ð²Ð°Ð½Ð¸Ñ Ð¿Ð¾ Ð‘Ð”!)
 declare @index_cursor as cursor;
 set @index_cursor = cursor forward_only for
 select 
@@ -144,7 +144,7 @@ select
 		when @index_rebuild_space_used_threshhold >= i.avg_page_space_used_in_percent then 'REBUILD ' + @WithOptionsRebuild
 		when @index_defrag_threshhold <= i.avg_fragmentation_in_percent then 'REORGANIZE '
 	end sql_command,
-	case -- îöåíêà âëèÿíèÿ íà æóðíàë òðàíçàêöèé (íåòî÷íàÿ!)
+	case -- Ð¾Ñ†ÐµÐ½ÐºÐ° Ð²Ð»Ð¸ÑÐ½Ð¸Ñ Ð½Ð° Ð¶ÑƒÑ€Ð½Ð°Ð» Ñ‚Ñ€Ð°Ð½Ð·Ð°ÐºÑ†Ð¸Ð¹ (Ð½ÐµÑ‚Ð¾Ñ‡Ð½Ð°Ñ!)
 		when @index_rebuild_threshhold <= i.avg_fragmentation_in_percent then i.page_count*8
 		when @index_rebuild_space_used_threshhold >= i.avg_page_space_used_in_percent then i.page_count*8
 		when @index_defrag_threshhold <= i.avg_fragmentation_in_percent then i.page_count*8*4*i.avg_fragmentation_in_percent/100
@@ -167,7 +167,7 @@ declare @size numeric(20,4);
 open @index_cursor;
 fetch @index_cursor into @sql, @size;
 
-print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- Íà÷àëî îáíîâëåíèÿ èíäåêñîâ' 
+print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- ÐÐ°Ñ‡Ð°Ð»Ð¾ Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ Ð¸Ð½Ð´ÐµÐºÑÐ¾Ð²' 
 
 while (@@FETCH_STATUS = 0)
 begin
@@ -176,38 +176,38 @@ begin
 	print '';
 	print '-- ' + convert(nvarchar(max), getdate(), 121);
 	print @sql;
-	print '-- Ðàçìåð èíäåêñà: ' + cast(@size as nvarchar(max));
-	print '-- Îñòàòîê @max_size: ' + cast(@max_size as nvarchar(max));
+	print '-- Ð Ð°Ð·Ð¼ÐµÑ€ Ð¸Ð½Ð´ÐµÐºÑÐ°: ' + cast(@size as nvarchar(max));
+	print '-- ÐžÑÑ‚Ð°Ñ‚Ð¾Ðº @max_size: ' + cast(@max_size as nvarchar(max));
 
 	if (@is_emulate = 0)
 		exec(@sql);
 
 	if (@timeout_datetime<getdate())
 	begin
-		print '-- Âûïîëíåíèå ïðåêðàùåíî ïî òàéìàóòó!';
+		print '-- Ð’Ñ‹Ð¿Ð¾Ð»Ð½ÐµÐ½Ð¸Ðµ Ð¿Ñ€ÐµÐºÑ€Ð°Ñ‰ÐµÐ½Ð¾ Ð¿Ð¾ Ñ‚Ð°Ð¹Ð¼Ð°ÑƒÑ‚Ñƒ!';
 		break;
 	end;
 	if (@max_size<0) 
 	begin
-		print '-- Äîñòèãíóò ïðåäåë îáñëóæèâàåìîãî ðàçìåðà, âûïîëíåíèå ïðåêðàùåíî!';
+		print '-- Ð”Ð¾ÑÑ‚Ð¸Ð³Ð½ÑƒÑ‚ Ð¿Ñ€ÐµÐ´ÐµÐ» Ð¾Ð±ÑÐ»ÑƒÐ¶Ð¸Ð²Ð°ÐµÐ¼Ð¾Ð³Ð¾ Ñ€Ð°Ð·Ð¼ÐµÑ€Ð°, Ð²Ñ‹Ð¿Ð¾Ð»Ð½ÐµÐ½Ð¸Ðµ Ð¿Ñ€ÐµÐºÑ€Ð°Ñ‰ÐµÐ½Ð¾!';
 		break;
 	end;
 		
 	fetch @index_cursor into @sql, @size;
 end;
 
-print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- Îêîí÷àíèå îáíîâëåíèÿ èíäåêñîâ' 
+print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- ÐžÐºÐ¾Ð½Ñ‡Ð°Ð½Ð¸Ðµ Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ Ð¸Ð½Ð´ÐµÐºÑÐ¾Ð²' 
 
 close @index_cursor;
 deallocate @index_cursor;
 
--- îáíîâëåíèå ÷àñòîòíûõ ñòàòèñòèê
+-- Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ðµ Ñ‡Ð°ÑÑ‚Ð¾Ñ‚Ð½Ñ‹Ñ… ÑÑ‚Ð°Ñ‚Ð¸ÑÑ‚Ð¸Ðº
 declare @dbstat_cursor as cursor;
 set @dbstat_cursor = cursor forward_only for
 select 'use [' + d.name + ']; exec sp_updatestats @resample = ''resample'';'
 from @database_names_table d
 
-print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- Íà÷àëî îáíîâëåíèÿ ÷àñòîòíûõ ñòàòèñòèê'
+print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- ÐÐ°Ñ‡Ð°Ð»Ð¾ Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ Ñ‡Ð°ÑÑ‚Ð¾Ñ‚Ð½Ñ‹Ñ… ÑÑ‚Ð°Ñ‚Ð¸ÑÑ‚Ð¸Ðº'
 
 open @dbstat_cursor;
 fetch @dbstat_cursor into @sql;
@@ -224,13 +224,13 @@ begin
 
 	if (@timeout_datetime<getdate())
 	begin
-		print '-- Âûïîëíåíèå ïðåêðàùåíî ïî òàéìàóòó!';
+		print '-- Ð’Ñ‹Ð¿Ð¾Ð»Ð½ÐµÐ½Ð¸Ðµ Ð¿Ñ€ÐµÐºÑ€Ð°Ñ‰ÐµÐ½Ð¾ Ð¿Ð¾ Ñ‚Ð°Ð¹Ð¼Ð°ÑƒÑ‚Ñƒ!';
 		break;
 	end;
 	fetch @dbstat_cursor into @sql;
 end;
 
-print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- Îêîí÷àíèå îáíîâëåíèÿ ÷àñòîòíûõ ñòàòèñòèê'
+print '-- ' + convert(nvarchar(max), getdate(), 121) + ' -- ÐžÐºÐ¾Ð½Ñ‡Ð°Ð½Ð¸Ðµ Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ Ñ‡Ð°ÑÑ‚Ð¾Ñ‚Ð½Ñ‹Ñ… ÑÑ‚Ð°Ñ‚Ð¸ÑÑ‚Ð¸Ðº'
 
 if (@is_emulate = 1)
   select * from #index_stats i order by i.avg_fragmentation_in_percent desc
